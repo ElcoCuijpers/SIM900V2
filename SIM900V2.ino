@@ -13,6 +13,7 @@
 #include <MCMCU.h>
 #include <GSMINTERFACE.h>
 #include <GSMMCU.h>
+#include <GPRSMCU.h>
 
 
 
@@ -20,7 +21,7 @@ SMSGSM sms;
 MCMCU mobileControlledMCU;
 GSMI gsmInterface;
 GSMMCU GSMMicroControllerUnit;
-
+GPRSMCU GPRSMicroControllerUnit;
 //To change pins for Software Serial, use the two lines in GSM.cpp.
 
 //GSM Shield for Arduino
@@ -31,7 +32,9 @@ GSMMCU GSMMicroControllerUnit;
 
 int numdata;
 boolean started=false;
-
+ char timeString[300];
+  char timeString2[300];
+ char sendingString[300];
 char timeSendString[25];
 void setup()
 {
@@ -44,7 +47,7 @@ void setup()
      mobileControlledMCU.begin();
      gsmInterface.begin();
      GSMMicroControllerUnit.begin(&gsm,&sms,&mobileControlledMCU,&gsmInterface);
-     
+    
      //Start configuration of shield with baudrate.
      //For http uses is raccomanded to use 4800 or slower.
      if (gsm.begin(19200)) {
@@ -60,19 +63,37 @@ void setup()
      Serial.print(" UnitID: ");
      Serial.println(mobileControlledMCU.getUnitId());
      }
-
-    // strcpy(timeSendString,"16/01/06,15:40:10+01");
-    // SetTimeStampString(timeSendString);
+      GPRSMicroControllerUnit.begin(&gsm,&mobileControlledMCU,&gsmInterface);
+    
+   // gsm.SimpleWriteln("AT+CIFSR");
+    //GPRSMicroControllerUnit.GPRSGetTime();
+   // strcpy(timeSendString,"17/01/10,11:45:10+01");
+   // SetTimeStampString(timeSendString);
+  
+  
 };
 
 void loop()
 {
   
-     if(started) {
+ if(started) {
+      gsm.WhileSimpleRead();
+      //strcpy(sendingString,"time=");
+     // GetTimeStampString(timeString);
+      //unsafe_URL_conversion(timeString,timeString2);
+      
+      //strcat(sendingString,timeString2);
+      //strcat(sendingString, "");
+      //strcpy(sendingString,"p1=0&p2=0&p10=0&p11=0&p13=0");
+      
+      GPRSMicroControllerUnit.GPRSGetSetupParameter("time=12");
 
-       GSMMicroControllerUnit.incommingHandler();
-       GSMMicroControllerUnit.outgoingHandler();
-       delay(1000);
+       
+      // GSMMicroControllerUnit.incommingHandler();
+       //GSMMicroControllerUnit.outgoingHandler();
+       GPRSMicroControllerUnit.GPRSSendHandler();
+       delay(10000);
+ 
      }
 };
 
