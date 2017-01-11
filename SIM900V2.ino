@@ -86,10 +86,11 @@ void loop()
       //strcat(sendingString, "");
       //strcpy(sendingString,"p1=0&p2=0&p10=0&p11=0&p13=0");
       
-      GPRSMicroControllerUnit.GPRSGetSetupParameter("time=12");
+     // GPRSMicroControllerUnit.GPRSGetSetupParameter("time=12");
+      GPRSMicroControllerUnit.GPRSSendDataToSink("time=12");
 
        
-      // GSMMicroControllerUnit.incommingHandler();
+       //GSMMicroControllerUnit.incommingHandler();
        //GSMMicroControllerUnit.outgoingHandler();
        GPRSMicroControllerUnit.GPRSSendHandler();
        delay(10000);
