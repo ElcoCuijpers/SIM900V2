@@ -1,7 +1,8 @@
 
+//#define DUE_EEPROM
 
 #include "SIM900.h"
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 #include "gps.h"
 
 
@@ -83,8 +84,10 @@ int stat;
 char lon[15];
 char lat[15];
 char alt[15];
-char timee[20];
+char date[10];
+char timee[10];
 char vel[15];
+char course[15];
 
 
 void loop()
@@ -117,7 +120,7 @@ void loop()
                Serial.println("3D FIXED");}
           delay(5000);
           //Get data from GPS
-          gps.getParRMC(lon,lat,alt,timee,vel);
+          gps.getParRMC(lon,lat,alt,timee,date,vel,course);
         /*  Serial.println(lon);
           Serial.println(lat);
           Serial.println(alt);
@@ -132,8 +135,13 @@ void loop()
       strcat(sendstring,alt);
       strcat(sendstring,"&time=");
       strcat(sendstring,timee);
+      strcat(sendstring,"&date=");
+      strcat(sendstring,date);
       strcat(sendstring,"&vel=");
       strcat(sendstring,vel);
+      strcat(sendstring,"&course=");
+      strcat(sendstring,course);
+      
       
       GPRSMicroControllerUnit.GPRSSendDataToSink(sendstring);
       Serial.print("string:");
