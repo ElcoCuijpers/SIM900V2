@@ -35,126 +35,63 @@ GPSGSM gps;
 
 int numdata;
 boolean started=false;
- char timeString[300];
-  char timeString2[300];
- char sendingString[300];
-char timeSendString[25];
-void setup()
-{
-     if(1){
+
+void print_device_info(){
      char number[20] = "21541561351";
-     //Serial connection.
-     Serial.begin(115200);
-     Serial.println("GSM Shield testing.");
-     Serial.print("MCMCU:");
-     mobileControlledMCU.begin();
-     gsmInterface.begin();
-     GSMMicroControllerUnit.begin(&gsm,&sms,&mobileControlledMCU,&gsmInterface);
-    
-     //Start configuration of shield with baudrate.
-     //For http uses is raccomanded to use 4800 or slower.
-     if (gsm.begin(19200)) {
-          Serial.println("\nstatus=READY");
-          started=true;
-     } else Serial.println("\nstatus=IDLE");
-     gsmInterface.getUserNumber(number);
+     gsmInterface.getAdminNumber(number);
      Serial.println(number);
      gsmInterface.getUserNumber(number);
      Serial.println(number);
      Serial.print("status: Block:");
      Serial.print(mobileControlledMCU.getBlockingMode());
      Serial.print(" UnitID: ");
-     Serial.println(mobileControlledMCU.getUnitId());
-     }
-      GPRSMicroControllerUnit.begin(&gsm,&mobileControlledMCU,&gsmInterface);
-      delay(5000);
+     Serial.println(mobileControlledMCU.getUnitId());  
+}
+
+
+void setup()
+{
+     //Serial connection.
+     Serial.begin(115200);
+     mobileControlledMCU.begin();
+     gsmInterface.begin();
+     GSMMicroControllerUnit.begin(&gsm,&sms,&mobileControlledMCU,&gsmInterface);
+     //Start configuration of shield with baudrate.
+     if (gsm.begin(19200)) {
+          Serial.println("\nstatus=GSMREADY");
+          started=true;
+     } else Serial.println("\nstatus=IDLE");  
+     GPRSMicroControllerUnit.begin(&gsm,&mobileControlledMCU,&gsmInterface);
      if (gps.attachGPS()){
          Serial.println("status=GPSREADY");}
-      else{ Serial.println("status=ERROR");}
-      delay(5000);
-   // gsm.SimpleWriteln("AT+CIFSR");
-    //GPRSMicroControllerUnit.GPRSGetTime();
-   // strcpy(timeSendString,"17/01/10,11:45:10+01");
-   // SetTimeStampString(timeSendString);
-  
-  
+     else{ Serial.println("status=ERROR");}
+     print_device_info();
+     delay(5000);
 };
-char sendstring[200];
-int stat;
-char lon[15];
-char lat[15];
-char alt[15];
-char date[10];
-char timee[10];
-char vel[15];
-char course[15];
+
 
 
 void loop()
 {
-  
+ char sendstring[200];
+ Serial.println("test");
+ delay(1000);
  if(started) {
-      gsm.WhileSimpleRead();
-      //strcpy(sendingString,"time=");
-     // GetTimeStampString(timeString);
-      //unsafe_URL_conversion(timeString,timeString2);
-      
-      //strcat(sendingString,timeString2);
-      //strcat(sendingString, "");
-      //strcpy(sendingString,"p1=0&p2=0&p10=0&p11=0&p13=0");
-      
-     // GPRSMicroControllerUnit.GPRSGetSetupParameter("time=12");
-      strcpy(sendstring,"stat=");
-          stat=gps.getStat();
-          if(stat==1){
-               strcat(sendstring,"NOT FIXED");
-               Serial.println("NOT FIXED");}
-          else if(stat==0){
-               strcat(sendstring,"GPS OFF");
-               Serial.println("GPS OFF");}
-          else if(stat==2){
-               strcat(sendstring,"2D FIXED");
-               Serial.println("2D FIXED");}
-          else if(stat==3){
-               strcat(sendstring,"3D FIXED");
-               Serial.println("3D FIXED");}
-          delay(5000);
-          //Get data from GPS
-          gps.getParRMC(lon,lat,alt,timee,date,vel,course);
-        /*  Serial.println(lon);
-          Serial.println(lat);
-          Serial.println(alt);
-          Serial.println(time);
-          Serial.println(vel);*/
-          
-      strcat(sendstring,"&lon=");
-      strcat(sendstring,lon);
-      strcat(sendstring,"&lat=");
-      strcat(sendstring,lat);
-      strcat(sendstring,"&alt=");
-      strcat(sendstring,alt);
-      strcat(sendstring,"&time=");
-      strcat(sendstring,timee);
-      strcat(sendstring,"&date=");
-      strcat(sendstring,date);
-      strcat(sendstring,"&vel=");
-      strcat(sendstring,vel);
-      strcat(sendstring,"&course=");
-      strcat(sendstring,course);
-      
-      
-      GPRSMicroControllerUnit.GPRSSendDataToSink(sendstring);
-      Serial.print("string:");
-      Serial.println(sendstring);
-       
-       //GSMMicroControllerUnit.incommingHandler();
-       //GSMMicroControllerUnit.outgoingHandler();
+       Serial.println("Joow");
+       gsm.WhileSimpleRead();
+       //GPRSMicroControllerUnit.GPRSSendDataToSink("blabla");
+       gps.getLocationString(sendstring);
+       GPRSMicroControllerUnit.GPRSSendDataToSink(sendstring);
+       //gps.sendLocationGPRS(&GPRSMicroControllerUnit);
+       //gps.sendLocationSMS(&GSMMicroControllerUnit, &gsmInterface);
+       GSMMicroControllerUnit.incommingHandler();
+       GSMMicroControllerUnit.outgoingHandler();
        GPRSMicroControllerUnit.GPRSSendHandler();
-       delay(20000);
+       delay(600000);
  
      }
 };
-
+ 
 
 
 
