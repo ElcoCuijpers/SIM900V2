@@ -3,7 +3,7 @@
 
 #include "SIM900.h"
 //#include <SoftwareSerial.h>
-#include "gps.h"
+
 
 
 
@@ -16,7 +16,7 @@
 #include <GSMMCU.h>
 #include <GPRSMCU.h>
 #include <TimerThree.h>
-
+#include "gps.h"
 #define FALSE 0
 #define TRUE 1
 
@@ -39,6 +39,13 @@ volatile int queueUART1 = 0;
 int numdata;
 boolean started=false;
 
+char sendstring[200];
+char sendstringcheckBuffer[200];
+//sendstring[0]='\0';
+//sendstringcheckBuffer[0]='\0';
+int tempQueueUART1;
+
+
 void print_device_info(){
      char number[20] = "21541561351";
      gsmInterface.getAdminNumber(number);
@@ -58,21 +65,21 @@ void masterClock(void){
   interrupts();
  // Serial.print("i");
   switch (masterTimer){
-    case 50://GPS location 
+    case 400://GPS location 
       queueUART1 += 1;
     break;  
-    case 400:// Send GPRS
+    case 800:// Send GPRS
       queueUART1 += 2;
     break;
-    case 600://Incomming SMS
+    case 1000://Incomming SMS
       queueUART1 += 4;
-    break;
+    break;/*
     case 800: // Incomming SMS
       queueUART1 += 8;
-    break;        
+    break;*/        
     break;  
   }
-  if(masterTimer>1000){masterTimer=0;}
+  if(masterTimer>1100){masterTimer=0;}
  // if(masterTimer%10){Serial.println("i");}
   masterTimer++;
 }
@@ -92,7 +99,6 @@ void setup()
           Serial.println("\nstatus=GSMREADY");
           started=true;
      } else Serial.println("\nstatus=IDLE");  
-     GPRSMicroControllerUnit.begin(&gsm,&mobileControlledMCU,&gsmInterface);
      if (gps.attachGPS()){
          Serial.println("status=GPSREADY");}
      else{ Serial.println("status=ERROR");}
@@ -107,11 +113,12 @@ void setup()
 
 void loop()
 {
-int tempQueueUART1;
+
 //gps.sendLocationSMS(&GSMMicroControllerUnit, &gsmInterface);
  //Serial.println("test");
  //delay(1000);
- char sendstring[200];
+
+
  if(started) {
     // Serial.println("Joow");
      //gsm.WhileSimpleRead();
@@ -123,32 +130,32 @@ int tempQueueUART1;
          switch (tempQueueUART1){
            case 01:
              Serial.println("case01");
-             //gps.getLocationString(sendstring);
-             //GPRSMicroControllerUnit.GPRSSendDataToSink(sendstring);
-             GPRSMicroControllerUnit.GPRSGetSetupParameter(sendstring);
+             if(!gps.getLocationString(sendstringcheckBuffer)){
+                 strcpy(sendstring,sendstringcheckBuffer);
+                  Serial.println("NEW COORDINATE");
+             }
+             
+            // gps.getLocationString(sendstring);
+             Serial.println(sendstring);
              queueUART1 = queueUART1 & 0xFE;
              break;  
          case 11:
-             GPRSMicroControllerUnit.GPRSSendHandler();  
              queueUART1 =queueUART1 & 0xFD;
+             GSMMicroControllerUnit.incommingHandler(sendstring);
+             
              Serial.println("case11");
-             break;
+             break;          
          case 21:
-             GSMMicroControllerUnit.incommingHandler();
              queueUART1 =queueUART1 & 0xFB;
-             Serial.println("case21");
-             break;
-         case 31:
              GSMMicroControllerUnit.outgoingHandler();
-             queueUART1 =queueUART1 & 0xF7;
-             Serial.println("case31");
-             break;                         
+             Serial.println("case21");
+             break;                       
          default:
            break;  
         }
       }
-      delay(100);
-      Serial.println(queueUART1);
+      //delay(100);
+      //Serial.println(queueUART1);
  }
 };
  
